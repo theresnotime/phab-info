@@ -99,7 +99,7 @@ async function scrapePhab(taskId) {
         'phabricator-handle-tag-list-item'
     );
     let cols = {};
-    for (var i = 0, l = taskTags.length; i < l; i++) {
+    for (var i = 0; i < taskTags.length; i++) {
         const tag = taskTags[i];
         const tagLinks = tag.getElementsByTagName('a');
         const tagText = tagLinks[0].innerText;
