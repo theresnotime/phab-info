@@ -33,10 +33,15 @@ function checkLoaded() {
  */
 async function start() {
     perf.start = new Date().getTime();
-    const phabTasks = document.getElementsByClassName('phui-oi-name');
+
+    // Yeah this will NEVER change will it..
+    const assignedTasks = document.getElementById('UQ4_0');
+
+    const phabTasks = assignedTasks.getElementsByClassName('phui-oi-name');
     console.info('[phab-info]: processing tasks...');
     for (var i = 0; i < phabTasks.length; i++) {
         const task = phabTasks[i];
+        console.log(task);
         const taskId = task.getElementsByTagName('span')[0].innerText;
         const taskTags = task.nextSibling.getElementsByClassName(
             'phabricator-handle-tag-list-item'
