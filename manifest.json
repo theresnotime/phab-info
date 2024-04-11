@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
     "name": "phab-info",
-    "version": "1.0",
-    "description": "awawaa",
+    "version": "1.1",
+    "description": "Shows the column a task is in when you hover over the project tag. Smart.",
     "permissions": ["storage", "scripting"],
     "content_scripts": [
         {
