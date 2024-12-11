@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "phab-info",
-    "version": "1.1",
+    "version": "1.2",
     "description": "Shows the column a task is in when you hover over the project tag. Smart.",
     "permissions": ["storage", "scripting"],
     "content_scripts": [
@@ -9,7 +9,7 @@
             "js": ["scripts/content.js"],
             "all_frames": true,
             "runAt": "document_idle",
-            "matches": ["https://phabricator.wikimedia.org/"]
+            "matches": ["https://phabricator.wikimedia.org/", "https://phabricator.wikimedia.org/maniphest/query/assigned/"]
         }
     ]
 }

@@ -10,8 +10,9 @@ var perf = {
     start: null,
     end: null,
 };
+var version = '1.2';
 
-console.info('[phab-info]: loading...');
+console.info(`[phab-info]: loading (v${version})...`);
 window.onload = (event) => {
     checkLoaded();
 };
@@ -29,20 +30,40 @@ function checkLoaded() {
 }
 
 /**
+ * Get the assigned tasks.
+ * @returns {Promise<HTMLElement|boolean>}
+ */
+async function getAssignedTasks() {
+    // Yeah these will NEVER change.. /s
+    if (document.getElementById('UQ4_0')) {
+        console.debug('[phab-info]: using dashboard layout');
+        return document.getElementById('UQ4_0');
+    } else if (document.getElementById('UQ0_190')) {
+        console.debug('[phab-info]: using assigned task query layout');
+        return document.getElementById('UQ0_190');
+    } else {
+        return false;
+    }
+}
+
+/**
  * Process the page.
  */
 async function start() {
     perf.start = new Date().getTime();
-
-    // Yeah this will NEVER change will it..
-    const assignedTasks = document.getElementById('UQ4_0');
-
+    const assignedTasks = await getAssignedTasks();
+    if (!assignedTasks) {
+        console.error('[phab-info]: no tasks found');
+        return;
+    }
     const phabTasks = assignedTasks.getElementsByClassName('phui-oi-name');
-    console.info('[phab-info]: processing tasks...');
+    console.debug('[phab-info]: processing tasks...');
+    await checkCacheExpiry();
     for (var i = 0; i < phabTasks.length; i++) {
         const task = phabTasks[i];
-        console.log(task);
         const taskId = task.getElementsByTagName('span')[0].innerText;
+        const taskTitle = task.getElementsByTagName('a')[0].innerText;
+        console.debug(`[phab-info]: processing task ${taskId}: ${taskTitle}`);
         const taskTags = task.nextSibling.getElementsByClassName(
             'phabricator-handle-tag-list-item'
         );
@@ -65,12 +86,12 @@ async function start() {
 function end() {
     perf.end = new Date().getTime();
     const seconds = Math.floor(((perf.end - perf.start) / 1000) % 60);
-    console.info('[phab-info]: done');
-    console.info(`[phab-info]: took ${seconds} seconds`);
-    console.info(`[phab-info]: ${totals.tags} tag columns identified`);
-    console.info(`[phab-info]: ${totals.cacheHits} cache hits`);
-    console.info(`[phab-info]: ${totals.cacheMisses} cache misses`);
-    console.info(`[phab-info]: ${totals.requests} web requests made`);
+    console.debug('[phab-info]: done');
+    console.debug(`[phab-info]: took ${seconds} seconds`);
+    console.debug(`[phab-info]: ${totals.tags} tag columns identified`);
+    console.debug(`[phab-info]: ${totals.cacheHits} cache hits`);
+    console.debug(`[phab-info]: ${totals.cacheMisses} cache misses`);
+    console.debug(`[phab-info]: ${totals.requests} web requests made`);
 }
 
 /**
@@ -134,6 +155,31 @@ async function cacheScrape(taskId, responseText) {
             [taskId]: responseText,
         });
         window.localStorage.setItem('phab-info_cache', cacheContent);
+    }
+    // Update the cache timestamp
+    window.localStorage.setItem(
+        'phab-info_cache_timestamp',
+        new Date().getTime()
+    );
+}
+
+/**
+ * Check if the cache has expired, and clear it if it has.
+ */
+async function checkCacheExpiry() {
+    let cache_timestamp = window.localStorage.getItem(
+        'phab-info_cache_timestamp'
+    );
+    if (cache_timestamp) {
+        let now = new Date().getTime();
+        // Clear the cache if it's older than an hour
+        if (now - cache_timestamp > 3600000) {
+            console.debug('[phab-info]: cache expired, clearing...');
+            window.localStorage.removeItem('phab-info_cache');
+            window.localStorage.removeItem('phab-info_cache_timestamp');
+        } else {
+            console.debug('[phab-info]: cache is still fresh');
+        }
     }
 }
 
